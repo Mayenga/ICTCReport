@@ -19,6 +19,14 @@ class RegisterUserController extends Controller
         return view('admin.newuser');
     }
 
+    public function isOnline($site = "https://www.youtube.com/"){
+        if(@fopen($site,"r")){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     public function store(Request $request)
     {
         $name = $request->name;
@@ -40,13 +48,15 @@ class RegisterUserController extends Controller
         event(new Registered($user));
 
         $data = array('name'=>$name, 'email' => $email);
-        Mail::send(['text'=>'mail'], $data, function($message)use ($request) {
-
-            $message->to($request->email, $request->name)->subject('ICT Commisiion Reporter Login credentials');
-            $message->from('info@ictc.go.tz','ICTC');
-        });
-        
-        return view('admin.newuser');
+        if($this->isOnline()){
+            Mail::send(['html'=>'mail'], $data, function($message)use ($request) {
+                $message->to($request->email, $request->name)->subject('ICT Commisiion Reporter Login credentials');
+                $message->from('info@ictc.go.tz','ICTC');
+            });
+        }else{
+            return view('admin.newuser');   
+        }
+        return view('admin.newuser');   
     }
     
     public function editprofile(Request $request){

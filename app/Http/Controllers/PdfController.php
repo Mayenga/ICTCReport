@@ -8,6 +8,124 @@ use Illuminate\Support\Facades\DB;
 
 class PdfController extends Controller
 {
+//     public function index(){
+//         $mpdf = new \Mpdf\Mpdf();
+//         $mpdf->showImageErrors = true;
+
+//         $message = "No activity this week";
+//         $id = auth()->id();
+//         $carbon = \Carbon\Carbon::now();  
+//         $weekStartDate = $carbon->startOfWeek()->format('Y-m-d H:i');
+//         $weekEndDate = $carbon->endOfWeek()->format('Y-m-d H:i');
+//         $todos = DB::select("SELECT * FROM todos WHERE user_id = $id AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate' UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id) AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
+
+//         $id = auth()->id();
+//         $user = DB::table('users')->where('id',$id)->get('name');
+        
+//         $user = $user[0]->name;
+
+//         // $mpdf->AddPage('L');
+//         // $mpdf->SetFontSize(16);
+//         // $mpdf->writeHTML("
+//         //     <table autosize='1' style='overflow: visible|hidden|wrap'>
+//         //         <tr>
+//         //             <td>image</td>
+//         //             <td>ICTC Reporting System</td>
+//         //             <td>image</td>
+//         //         </tr>
+//         //         <tr>
+//         //             <td>Activity</td>
+//         //             <td>Deadline</td>
+//         //             <td>Progress</td>
+//         //             <td>Status</td>
+//         //             <td>Output</td>
+//         //         </tr>
+                
+//         //     </table>
+//         // ");
+// //one end 
+
+//             $header = '<!--mpdf
+//             <htmlpageheader name="letterheader">
+//                 <table width="100%" style=" font-family: sans-serif;">
+//                     <tr>
+//                         <td width="50%" style="color:#0000BB; ">
+                            
+//                         </td>
+//                         <td width="50%" style="text-align: center; font-size: 25pt; vertical-align: center;">
+//                             ICTC.<br />
+//                             <span style="font-weight: bold; font-size: 20pt;">Weekly Report</span><br />
+//                             <span style="font-weight: bold; font-size: 15pt;">Date : {DATE jS F Y}</span>
+//                         </td>
+//                         <td width="50%" style="text-align: right; vertical-align: top;">
+                            
+//                         </td>
+//                     </tr>
+//                 </table>
+//             </htmlpageheader>
+            
+//             <htmlpagefooter name="letterfooter2">
+//                 <div style="border-top: 1px solid #000000; font-size: 9pt; text-align: center; padding-top: 3mm; font-family: sans-serif; ">
+//                     Page {PAGENO} of {nbpg}
+//                 </div>
+//             </htmlpagefooter>
+//         mpdf-->
+        
+//         <style>
+//             @page {
+//                 margin-top: 2.5cm;
+//                 margin-bottom: 2.5cm;
+//                 margin-left: 2cm;
+//                 margin-right: 2cm;
+//                 footer: html_letterfooter2;
+//                 background-color: pink;
+//             }
+        
+//             @page :first {
+//                 margin-top: 8cm;
+//                 margin-bottom: 4cm;
+//                 header: html_letterheader;
+//                 footer: _blank;
+//                 resetpagenum: 1;
+//                 background-color: lightblue;
+//             }
+        
+//             @page letterhead {
+//                 margin-top: 2.5cm;
+//                 margin-bottom: 2.5cm;
+//                 margin-left: 2cm;
+//                 margin-right: 2cm;
+//                 footer: html_letterfooter2;
+//                 background-color: pink;
+//             }
+        
+//             @page letterhead :first {
+//                 margin-top: 8cm;
+//                 margin-bottom: 4cm;
+//                 header: html_letterheader;
+//                 footer: _blank;
+//                 resetpagenum: 1;
+//                 background-color: lightblue;
+//             }
+//         </style>';
+        
+//         $tabledata = '
+//         I will load data table here!!!
+//         ';
+        
+//         $mpdf->WriteHTML($header);
+//         $mpdf->WriteHTML($tabledata);
+
+//         // $html = view('html_convert_pdf',[],true);
+//         // $mpdf->WriteHTML($html);
+
+//         $mpdf->debug = true; 
+
+
+//         $mpdf->output();
+
+//     }
+    
     protected $fpdf;
  
     public function __construct()

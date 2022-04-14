@@ -1,10 +1,9 @@
-Hellow, {{ $name }}
+<h1>Hellow, {{ $name }}</h1>
 
-Visit https://www.softcenter.ictc.go.tz/login To log in to ICTC Reporter System. 
-Your log in Credentialis are as follows :- 
-
-User Email : {{ $email }} 
+<p>Visit 192.168.1.111/ictc/public To log in to <span style="font-size:15;font-weight:bold">ICTC Reporter</span> System. 
+Your log in Credentialis are as follows : </p>
+<br /><br />
+User Email : {{ $email }} <br />
 Password : ICTC123
-
-After logged in, kindly change your password.
-        
+<br /><br />
+<p>After logged in, kindly change your password.</p><br />

@@ -19,6 +19,14 @@ class TodoController extends Controller
         return view('todo.todolist')->with(['todos' => $todos,'week' => true]);
     }
 
+    public function isOnline($site = "https://www.youtube.com/"){
+        if(@fopen($site,"r")){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     public function reporttodo(){
         $id = auth()->id();
         $carbon = \Carbon\Carbon::now();  
@@ -221,10 +229,14 @@ class TodoController extends Controller
                 $email = $users->email;
 
                 $data = array('name'=>$name, 'email' => $email,'from' => $namefro);
-                Mail::send(['text'=>'transfer'], $data, function($message)use ($users) {
-                    $message->to($users->email, $users->name)->subject('ICT Commision Reporter Assignment note');
-                    $message->from('info@ictc.go.tz','ICTC');
-                });
+                if($this->isOnline()){
+                    Mail::send(['text'=>'transfer'], $data, function($message)use ($users) {
+                        $message->to($users->email, $users->name)->subject('ICT Commision Reporter Assignment note');
+                        $message->from('info@ictc.go.tz','ICTC');
+                    });
+                }else{
+                    return redirect()->back()->with('success', "Email not sent, check your internet connection.");            
+                }
             }
         }
 
@@ -248,10 +260,14 @@ class TodoController extends Controller
                 $email = $users->email;
 
                 $data = array('name'=>$name, 'email' => $email,'from' => $namefro);
-                Mail::send(['text'=>'transfer'], $data, function($message)use ($users) {
-                    $message->to($users->email, $users->name)->subject('ICT Commision Reporter Assignment note');
-                    $message->from('info@ictc.go.tz','ICTC');
-                });
+                if(!$this->isOnline()){
+                    Mail::send(['text'=>'transfer'], $data, function($message)use ($users) {
+                        $message->to($users->email, $users->name)->subject('ICT Commision Reporter Assignment note');
+                        $message->from('info@ictc.go.tz','ICTC');
+                    });
+                }else{
+                    return redirect()->back()->with('success', "Email not sent, check your internet connection.");            
+                }
             }
         }
         
