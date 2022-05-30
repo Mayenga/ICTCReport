@@ -17,6 +17,7 @@ class Todo extends Model
         'complited',
         'completedtime',
         'transfered',
+        'transferedWho',
         'user_id',
         'reason'
     ];

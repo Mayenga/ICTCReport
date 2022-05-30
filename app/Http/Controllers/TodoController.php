@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Todo;
 use App\Models\Transfer;
 use Illuminate\Support\Facades\Mail;
+use Auth;
 
 class TodoController extends Controller
 {
@@ -15,7 +16,7 @@ class TodoController extends Controller
         $carbon = \Carbon\Carbon::now();  
         $weekStartDate = $carbon->startOfWeek()->format('Y-m-d H:i');
         $weekEndDate = $carbon->endOfWeek()->format('Y-m-d H:i');
-        $todos = DB::select("SELECT * FROM todos WHERE user_id = $id AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate' UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id) AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
+        $todos = DB::select("SELECT * FROM todos WHERE user_id = $id AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate' UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id OR dpt_id IN(SELECT dpt_id FROM users WHERE id = $id AND id IN(SELECT user_id FROM role_user WHERE role_id = 3))) AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
         return view('todo.todolist')->with(['todos' => $todos,'week' => true]);
     }
 
@@ -28,31 +29,53 @@ class TodoController extends Controller
     }
 
     public function reporttodo(){
-        $id = auth()->id();
-        $carbon = \Carbon\Carbon::now();  
-        $weekStartDate = $carbon->startOfWeek()->format('Y-m-d H:i');
-        $weekEndDate = $carbon->endOfWeek()->format('Y-m-d H:i');
-        $todos = DB::select("SELECT * FROM todos WHERE user_id = $id AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate' UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id) AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
+        // $id = auth()->id();
+        // $carbon = \Carbon\Carbon::now();  
+        // $weekStartDate = $carbon->startOfWeek()->format('Y-m-d H:i');
+        // $weekEndDate = $carbon->endOfWeek()->format('Y-m-d H:i');
+        // $todos = DB::select("SELECT * FROM todos WHERE user_id = $id AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate' UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id) AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
+        $todos = [];
         return view('todo.reports.reporttodo')->with(['todos' => $todos,'week' => true]);
     }
 
     public function reporttododg(){
-        $id = auth()->id();
-        $uidd = '';
-        $dpt = '';
-        $dp = DB::select("SELECT * FROM departments limit 1");
-        foreach($dp As $ddp){
-            $dpt = $ddp->id;
-        }
-        $uid = DB::select("SELECT * FROM users WHERE dpt_id = $dpt AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)");
-        foreach($uid As $ID){
-            $uidd = $ID->id;
-        }
-        $carbon = \Carbon\Carbon::now();  
-        $weekStartDate = $carbon->startOfWeek()->format('Y-m-d H:i');
-        $weekEndDate = $carbon->endOfWeek()->format('Y-m-d H:i');
-        $todos = DB::select("SELECT * FROM todos WHERE user_id = $uidd AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate' UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $uidd) AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
+        // $id = auth()->id();
+        // $uidd = '';
+        // $dpt = '';
+        // $dp = DB::select("SELECT * FROM departments limit 1");
+        // foreach($dp As $ddp){
+        //     $dpt = $ddp->id;
+        // }
+        // $uid = DB::select("SELECT * FROM users WHERE dpt_id = $dpt AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)");
+        // foreach($uid As $ID){
+        //     $uidd = $ID->id;
+        // }
+        // $carbon = \Carbon\Carbon::now();  
+        // $weekStartDate = $carbon->startOfWeek()->format('Y-m-d H:i');
+        // $weekEndDate = $carbon->endOfWeek()->format('Y-m-d H:i');
+        // $todos = DB::select("SELECT * FROM todos WHERE user_id = $uidd AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate' UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $uidd) AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
+        $todos = [];
         return view('todo.reports.reportsDG')->with(['todos' => $todos,'week' => true]);
+    }
+
+    public function reporttododr(){
+        // $id = auth()->id();
+        // $uidd = '';
+        // $dpt = '';
+        // $dp = DB::select("SELECT * FROM departments limit 1");
+        // foreach($dp As $ddp){
+        //     $dpt = $ddp->id;
+        // }
+        // $uid = DB::select("SELECT * FROM users WHERE dpt_id = $dpt AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)");
+        // foreach($uid As $ID){
+        //     $uidd = $ID->id;
+        // }
+        // $carbon = \Carbon\Carbon::now();  
+        // $weekStartDate = $carbon->startOfWeek()->format('Y-m-d H:i');
+        // $weekEndDate = $carbon->endOfWeek()->format('Y-m-d H:i');
+        // $todos = DB::select("SELECT * FROM todos WHERE user_id = $uidd AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate' UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $uidd) AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
+        $todos = [];
+        return view('todo.reports.reportsDR')->with(['todos' => $todos,'week' => true]);
     }
 
     public function getTodosWeek(){
@@ -83,6 +106,8 @@ class TodoController extends Controller
         $category = $request->category; 
         $datefrom = $request->datefrom; 
         $dateto = $request->dateto;
+        $dpt = $request->dpt;
+        $user = $request->user;
         $todos = [];
 
         if($datefrom != '' && $dateto != ''){
@@ -107,17 +132,149 @@ class TodoController extends Controller
         }
 
         if($category == 1){
-            $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
-            return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+            if(Auth::user()->hasRole('dg')){
+                if($dpt == 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }elseif($dpt == -1){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id != $id OR user_id = $id)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }elseif($dpt != -1 && $dpt != 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments WHERE id = $dpt) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }
+            }
+            if(Auth::user()->hasRole('director')){
+                if($user == 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE user_id = $id AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate' UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE dpt_id IN(SELECT dpt_id FROM users WHERE id = $id AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)))");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }elseif($user != 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $user UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $user)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }
+            }
+            if(Auth::user()->hasRole('user')){
+                $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+                return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // if($dpt == 0){
+                //     $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+                //     return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // }elseif($dpt == -1){
+                //     $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id != $id OR user_id = $id)");
+                //     return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // }elseif($dpt != -1 && $dpt != 0){
+                //     $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments WHERE id = $dpt) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt)");
+                //     return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // }
+            }
         }elseif($category == 2){
-            $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id AND complited = 1 UNION SELECT * FROM todos WHERE complited = 1 AND id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
-            return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+            if(Auth::user()->hasRole('dg')){
+                if($dpt == 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id AND complited = 1 UNION SELECT * FROM todos WHERE complited = 1 AND id IN(SELECT todo_id FROM transfers WHERE user_id = $id OR dpt_id = $dpt)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }elseif($dpt == -1){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND complited = 1 AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE complited = 1 AND id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt OR user_id = $id)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }elseif($dpt != -1 && $dpt != 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND complited = 1 AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments WHERE id = $dpt) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE complited = 1 AND id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt AND user_id = $id)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }
+            }
+            if(Auth::user()->hasRole('director')){
+                if($user == 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE complited = 1 AND user_id = $id AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate' UNION SELECT * FROM todos WHERE complited = 1 AND id IN(SELECT todo_id FROM transfers WHERE dpt_id IN(SELECT dpt_id FROM users WHERE id = $id AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)))");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }elseif($user != 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE complited = 1 AND created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $user UNION SELECT * FROM todos WHERE complited = 1 AND id IN(SELECT todo_id FROM transfers WHERE user_id = $user)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }
+            }
+            if(Auth::user()->hasRole('user')){
+                $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id AND complited = 1 UNION SELECT * FROM todos WHERE complited = 1 AND id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+                return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // if($dpt == 0){
+                //     $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id AND complited = 1 UNION SELECT * FROM todos WHERE complited = 1 AND id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+                //     return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // }elseif($dpt == -1){
+                //     $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND complited = 1 AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE complited = 1 AND id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt OR user_id = $id)");
+                //     return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // }elseif($dpt != -1 && $dpt != 0){
+                //     $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND complited = 1 AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments WHERE id = $dpt) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE complited = 1 AND id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt AND user_id = $id)");
+                //     return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // }
+            }
         }elseif($category == 3){
-            $todos = DB::select("SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
-            return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+            if(Auth::user()->hasRole('dg')){
+                if($dpt == 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id AND complited = 0 UNION SELECT * FROM todos WHERE complited = 0 AND id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }elseif($dpt == -1){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND complited = 0 AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE complited = 0 AND id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt OR user_id = $id)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }elseif($dpt != -1 && $dpt != 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND complited = 0 AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments WHERE id = $dpt) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE complited = 0 AND id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt AND user_id = $id)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }
+            }
+            if(Auth::user()->hasRole('director')){
+                if($user == 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE complited = 0 AND user_id = $id AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate' UNION SELECT * FROM todos WHERE complited = 0 AND id IN(SELECT todo_id FROM transfers WHERE dpt_id IN(SELECT dpt_id FROM users WHERE id = $id AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)))");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }elseif($user != 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE complited = 0 AND created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $user UNION SELECT * FROM todos WHERE complited = 0 AND id IN(SELECT todo_id FROM transfers WHERE user_id = $user)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }
+            }
+            if(Auth::user()->hasRole('user')){
+                $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id AND complited = 0 UNION SELECT * FROM todos WHERE complited = 0 AND id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+                return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // if($dpt == 0){
+                //     $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id AND complited = 0 UNION SELECT * FROM todos WHERE complited = 0 AND id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+                //     return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // }elseif($dpt == -1){
+                //     $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND complited = 0 AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE complited = 0 AND id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt OR user_id = $id)");
+                //     return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // }elseif($dpt != -1 && $dpt != 0){
+                //     $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND complited = 0 AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments WHERE id = $dpt) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE complited = 0 AND id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt AND user_id = $id)");
+                //     return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // }
+            }
         }elseif($category == 4){
-            $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id AND complited = 0 UNION SELECT * FROM todos WHERE complited = 1 AND id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
-            return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+            if(Auth::user()->hasRole('dg')){
+                if($dpt == 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id AND id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }elseif($dpt == -1){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND id IN(SELECT todo_id FROM transfers)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }elseif($dpt != -1 && $dpt != 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }
+            }
+            if(Auth::user()->hasRole('director')){
+                if($user == 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND id IN(SELECT todo_id FROM transfers WHERE dpt_id IN(SELECT dpt_id FROM users WHERE id = $id AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)))");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }elseif($user != 0){
+                    $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND id IN(SELECT todo_id FROM transfers WHERE user_id = $user)");
+                    return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                }
+            }
+            if(Auth::user()->hasRole('user')){
+                $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+                return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // if($dpt == 0){
+                //     $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND user_id = $id AND id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+                //     return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // }elseif($dpt == -1){
+                //     $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND id IN(SELECT todo_id FROM transfers)");
+                //     return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // }elseif($dpt != -1 && $dpt != 0){
+                //     $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$datefrom' AND '$dateto' AND id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt)");
+                //     return view('todo.reports.reporttodo')->with(['todos' => $todos]);
+                // }
+            }
         }
     }
 
@@ -136,31 +293,74 @@ class TodoController extends Controller
         $d2 = $weekEndDate;
 
         if($week == ''){
-            $uid = DB::select("SELECT * FROM users WHERE dpt_id = $dpt AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)");
-            foreach($uid As $ID){
-                $uidd = $ID->id;
-            }
-            $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id = $uidd UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $uidd)");
+            // $uid = DB::select("SELECT * FROM users WHERE dpt_id = $dpt AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)");
+            // foreach($uid As $ID){
+            //     $uidd = $ID->id;
+            // }
+            // $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id = $uidd UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $uidd)");
+            $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments WHERE id = $dpt) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt)");
             return view('todo.reports.reportsDG')->with(['todos' => $todos]);
         }else if($week > $todayweek){
-                return view('todo.reports.reportsDG')->with(['todos' => $todos]);
-            }else{
-                $uid = DB::select("SELECT * FROM users WHERE dpt_id = $dpt AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)");
-                foreach($uid As $ID){
-                    $uid = $ID->id;
-                    $uname = $ID->name;
-                }
-                // date()
-                $year = date('Y');
-                $week_start = new \DateTime();
-                $week_start->setISODate($year,$week);
-                $d1 = $week_start->format('Y-m-d H:i');
-                
-                $d2 = $d1;
-                $d2 = date( "Y-m-d H:i", strtotime( "$d2 +5 day" ) ); 
+            return view('todo.reports.reportsDG')->with(['todos' => $todos]);
+        }else{
+            $uid = DB::select("SELECT * FROM users WHERE dpt_id = $dpt AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)");
+            foreach($uid As $ID){
+                $uid = $ID->id;
+                $uname = $ID->name;
+            }
+            // date()
+            $year = date('Y');
+            $week_start = new \DateTime();
+            $week_start->setISODate($year,$week);
+            $d1 = $week_start->format('Y-m-d H:i');
+            
+            $d2 = $d1;
+            $d2 = date( "Y-m-d H:i", strtotime( "$d2 +5 day" ) ); 
 
-                $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id = $uid UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
-                return view('todo.reports.reportsDG')->with(['todos' => $todos]);
+            $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments WHERE id = $dpt) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt)");
+            // $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id = $uid UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+            return view('todo.reports.reportsDG')->with(['todos' => $todos]);
+        }
+    }
+
+    public function reportdr(Request $request){
+        $id = auth()->id();
+        $uidd = '';
+        $todayweek =date("W");
+        $carbon = \Carbon\Carbon::now();  
+        $weekStartDate = $carbon->startOfWeek()->format('Y-m-d H:i');
+        $weekEndDate = $carbon->endOfWeek()->format('Y-m-d H:i');
+        $user = $request->user; 
+        $week = $request->week; 
+        $todos = [];
+        $week = substr($week,6);
+        $d1 = $weekStartDate;
+        $d2 = $weekEndDate;
+
+        if($week == ''){
+            $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id = $user UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $user)");
+            return view('todo.reports.reportsDR')->with(['todos' => $todos]);
+        }else if($week > $todayweek){
+            return view('todo.reports.reportsDR')->with(['todos' => $todos]);
+        }else{
+            // $uid = DB::select("SELECT * FROM users WHERE dpt_id = $dpt AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)");
+            // foreach($uid As $ID){
+            //     $uid = $ID->id;
+            //     $uname = $ID->name;
+            // }
+            // date()
+            $year = date('Y');
+            $week_start = new \DateTime();
+            $week_start->setISODate($year,$week);
+            $d1 = $week_start->format('Y-m-d H:i');
+            
+            $d2 = $d1;
+            $d2 = date( "Y-m-d H:i", strtotime( "$d2 +5 day" ) ); 
+
+            // $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments WHERE id = $dpt) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt)");
+            $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id = $user UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $user)");
+            // $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id = $uid UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
+            return view('todo.reports.reportsDR')->with(['todos' => $todos]);
         }
     }
 
@@ -182,6 +382,7 @@ class TodoController extends Controller
         $output = $request->output;
         $deadline = $request->deadline;
         $transfered = false;
+        $transferedWho = 0;
         $reason = "No reason";
 
         if($output == ""){
@@ -203,16 +404,18 @@ class TodoController extends Controller
         // DG
         if($transfer != ''){
             $transfered = true;
+            $transferedWho = 1;
         }
 
         // director
         if($transferUser != ''){
             $transfered = true;
+            $transferedWho = 2;
         }
 
         $user_id = auth()->id();
         $now = now();
-        $todo = Todo::create(['title' => $title,'progress' => $progress,'process' => $process,'output' => $output,'deadline' => $deadline,'completedtime' => $now,'transfered' => $transfered,'user_id' => $user_id,'reason' => $reason]);
+        $todo = Todo::create(['title' => $title,'progress' => $progress,'process' => $process,'output' => $output,'deadline' => $deadline,'completedtime' => $now,'transfered' => $transfered,'transferedWho' => $transferedWho,'user_id' => $user_id,'reason' => $reason]);
         
         if($transfer != ''){
             Transfer::create(['transferDate' => $now,'user_id' => $user_id,'todo_id' => $todo->id,'dpt_id' => $transfer]);
@@ -279,6 +482,14 @@ class TodoController extends Controller
         return view('todo.edit')->with(['id' => $id, 'todo' => $todo]);
     }
 
+    public function sendDelaymessage(Request $request){
+        $request->validate([
+            'Reason' => 'required',
+        ]);
+        $updateReasonTodo = DB::table('todos')->where('id', $request->id)->limit(1)->update(array('reason' => $request->Reason)); 
+        return redirect('/dashboard/todolist')->with('success', "Reason sent successfully!");
+    }
+    
     public function update(Request $request){
         $request->validate([
             'title' => 'required',

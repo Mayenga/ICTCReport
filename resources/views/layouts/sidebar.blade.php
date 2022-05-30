@@ -114,6 +114,11 @@
         </a>
       </li>
       <li>
+        <a href="{{ route('reporttododr') }}">
+          <i class="bi bi-circle"></i><span>Submited Reports</span>
+        </a>
+      </li>
+      <li>
         <a href="{{ route('getReport') }}" target='blank'>
           <i class="bi bi-circle"></i><span style="color:blue">Get week Report</span>
         </a>

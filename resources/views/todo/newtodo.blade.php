@@ -81,12 +81,16 @@
                   <div class="col-sm-10">
                   <?php 
                     $id = Auth::user()->id;
+                    $dg =  DB::select("SELECT id FROM users WHERE id IN(SELECT user_id FROM role_user WHERE role_id = 2)");
                     $dptidDir = DB::select("SELECT dpt_id FROM users WHERE id = $id");
                     $iddd = 0;
                     foreach($dptidDir As $dpid){
                       $iddd = $dpid->dpt_id;
                     }
-                    $users = DB::select("SELECT * FROM users WHERE dpt_id = $iddd AND id != $id");
+                    foreach($dg As $dgid){
+                      $dg = $dgid->id;
+                    }
+                    $users = DB::select("SELECT * FROM users WHERE dpt_id = $iddd AND id != $id AND id != $dg");
                   ?>
                     <select name="transferUser" class="form-select" multiple aria-label="multiple select example">
                       <option value="" selected>Select Candidate</option>

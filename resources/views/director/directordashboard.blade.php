@@ -220,7 +220,7 @@
                   $carbon = \Carbon\Carbon::now();  
                   $weekStartDate = $carbon->startOfWeek()->format('Y-m-d H:i');
                   $weekEndDate = $carbon->endOfWeek()->format('Y-m-d H:i');
-                  $activities = DB::select("SELECT * FROM todos WHERE user_id = $id AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
+                  $activities = DB::select("SELECT * FROM todos WHERE user_id = $id AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id OR dpt_id IN(SELECT dpt_id FROM users WHERE id = $id AND id IN(SELECT user_id FROM role_user WHERE role_id = 3))) AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
                   foreach($activities As $todos){
                       $deadline = $todos->deadline;
                       $title = $todos->title;

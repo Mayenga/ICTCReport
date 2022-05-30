@@ -75,22 +75,22 @@ class RegisterUserController extends Controller
             'newpassword' => 'required',
             'renewpassword' => 'required',
         ]);
+        $updatedPass = Hash::make($request->renewpassword);
         $reqPass = Hash::make($request->password);
-        $userspss = DB::select("SELECT * FROM users WHERE password = $reqPass");
+        $userspss = DB::select("SELECT * FROM users WHERE id = $request->id");
         foreach($userspss AS $pass){
             $dbpassword = $pass->password;
         }
-        if($request->password = $dbpassword){
+        if($reqPass == $dbpassword){
             if($request->renewpassword == $request->newpassword){
-
+                $updateuDetails = User::find($request->id);
+                $updateuDetails->update(['password' => $updatedPass]);
+                return redirect('/profile')->with('success', "Your Password Updated Successfully!");
             }else{
-                return redirect('/profile')->with('success', "Passwords isatch password!");
+                return redirect('/profile')->with('success', "Passwords misatch!");
             }
         }else{
-            return redirect('/profile')->with('success', "You entered invalid password!");
+            return redirect('/profile')->with('success', "You entered invalid password! $dbpassword and $reqPass");
         }
-        $updateuDetails = User::find($request->id);
-        $updateuDetails->update(['name' => $request->name,'email' => $request->email]);
-        return redirect('/profile')->with('success', "Your details Updated successfully!");
     }
 }

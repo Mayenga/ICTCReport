@@ -18,59 +18,43 @@
 
         <!-- Recent Sales -->
         <div class="col-12">
+            <?php 
+                $carbon = \Carbon\Carbon::now();  
+                $d1 = date('d');
+                $to = 0;
+                $leo = $carbon->dayOfWeek;
+                if($leo < 7){
+                $cd = 6 - $leo;
+                $to = $d1 + $cd;
+                }
+                $d2 = $to;
+            ?>
               <div class="card recent-sales">
                 <div class="card-body">
                   <h5 class="card-title">Activity List<span>| </h5>
                   <!-- <a href="{{ route('getReport') }}" target="blank" class="badge bg-primary">PDF</a> -->
                   <h6><x-alert /></h6>
-                  <form action="/report" method="POST">
+                  <form action="/reportdr" method="POST">
                     @csrf
                     <div class="row">
                       <div class="col-3">
-                        <select name="category" class="form-select" aria-label="Default select example">
-                          <option value="1">All Activities</option>
-                          <option value="2">Completed Activities</option>
-                          <option value="3">Pending</option>
-                          <option value="4">Transfered Activities</option>
+                        <?php 
+                          $uid = Auth::user()->id;
+                          $users = DB::select("SELECT * FROM users WHERE dpt_id IN(SELECT dpt_id FROM users WHERE id = $uid) AND id IN(SELECT user_id FROM role_user WHERE role_id = 4)");
+                        ?>
+                        <select name="user" class="form-select" aria-label="multiple select example">
+                            @foreach($users AS $user)
+                                <option value="{{ $user->id }}">{{$user->name}}</option>
+                            @endforeach
                         </select>
                       </div>
                       <div class="col-3">
-                        <?php
-                          $uid = Auth::user()->id;
-                          $dpts = DB::select("SELECT * FROM departments");
-                          $users = DB::select("SELECT * FROM users WHERE dpt_id IN(SELECT dpt_id FROM users WHERE id = $uid) AND id IN(SELECT user_id FROM role_user WHERE role_id = 4)");
-                          if (Auth::user()->hasRole('dg')){
-                            echo "<select name='dpt' class='form-select' aria-label='Default select example'>
-                            <option value=0>Select Department</option>
-                            <option value=-1>All Departments</option>";
-                            foreach($dpts as $dpt){
-                              echo "<option value='$dpt->id'>$dpt->name</option>";
-                            }
-                            echo '</select>';
-                          }
-                          if (Auth::user()->hasRole('director')){
-                            echo '<select name="user" class="form-select" aria-label="Default select example">
-                            <option value=0>Select User</option>';
-                            foreach($users as $user){
-                              echo "<option value='$user->id'>$user->name</option>";
-                            }
-                            echo '</select>';
-                          }
-                        ?>
+                        <input name="week" type="week" class="form-control">
                       </div>
-                      <div class="col-2">
-                        From <input name="datefrom" type="date" class="form-control">
-                      </div>
-                      <div class="col-2">
-                        To <input name="dateto" type="date" class="form-control">
-                      </div>
-                      <div class="col-2">
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Search</button>
+                      <div class="col-3">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>GET</button>
                         <!-- <button type="button" class="btn btn-info">Export</button> -->
                       </div>
-                      <!-- <div class="col-1">
-                      <button type="button" class="btn btn-info">Export</button>
-                      </div> -->
                     </div>
                   </form>
                   <br>
@@ -85,23 +69,12 @@
                           echo '<tr>
                             <th scope="col">#</th>
                             <th scope="col">Activity</th>
-                            <th scope="col">Process</th>
                             <th scope="col">Deadline</th>
                             <th scope="col">Progress</th>
-                            <th scope="col">Output</th>
-                            <th scope="col">Transfered</th>
                             <th scope="col">Status</th>
+                            <th scope="col">Output</th>
+                            <th scope="col"></th>
                           </tr>';
-                        }else{
-                          echo '<tr>
-                          <th scope="col">#</th>
-                          <th scope="col">Activity</th>
-                          <th scope="col">Process</th>
-                          <th scope="col">Deadline</th>
-                          <th scope="col">Progress</th>
-                          <th scope="col">Output</th>
-                          <th scope="col">Status</th>
-                        </tr>';
                         }
                       }
                     
@@ -110,8 +83,6 @@
                     <tbody>
                       @foreach($todos as $todo)
                         <?php 
-                          $d1 = date_create(date("Y-m-d"));
-                          $d2 = date_create($todo->deadline);
                           $status = '';
                           $statuss = '';
                           $statusclass = '';
@@ -128,21 +99,6 @@
                             $statusclass = 'badge bg-warning';
                             $status = 'Pending';
                             $statusAction = 'Completed';
-                          }
-                          if($d2 >= $d1){
-                          }else{
-                            if($todo->complited){
-                              $status = 'Completed';
-                              $statusclass = 'badge bg-success';
-                            }else{
-                              if($todo->reason == 'No reason'){
-                                $status = 'Pending And Delayed';
-                                $statusclass = 'badge bg-danger'; 
-                              }else{
-                                $status = 'Delayed but Sorted';
-                                $statusclass = 'badge bg-danger';
-                              }
-                            }
                           }
                           if($todo->transfered){
                             $statusclasss = 'badge bg-success';
@@ -165,13 +121,6 @@
                           </td>
                           <td>
                             @if($todo->complited)
-                                <span style="text-decoration:line-through">{{$todo->process}}</span>
-                            @else
-                              {{$todo->process}}
-                            @endif
-                          </td>
-                          <td>
-                            @if($todo->complited)
                                 <span style="text-decoration:line-through">{{$todo->deadline}}</span>
                             @else
                               {{$todo->deadline}}
@@ -184,6 +133,7 @@
                               {{$todo->progress}}
                             @endif
                           </td>
+                          <td><span class="{{ $statusclass }}">{{$status}}</span></td>
                           <td>
                             @if($todo->complited)
                                 <span style="text-decoration:line-through">{{$todo->output}}</span>
@@ -191,10 +141,13 @@
                               {{$todo->output}}
                             @endif
                           </td>
-                          @if (Auth::user()->hasRole('dg') || Auth::user()->hasRole('director'))
-                          <td><span class="{{ $statusclasss }}">{{$statuss}}</span></td>
-                          @endif
-                          <td><span class="{{ $statusclass }}">{{$status}}</span></td>
+                          <td>
+                            @if($todo->complited)
+                                <!-- <span style="text-decoration:line-through">{{$todo->output}}</span> -->
+                            @else
+                            ({{$todo->reason}})
+                            @endif
+                          </td>
                         </tr>
                         
                         <!-- Disabled Backdrop Modal -->

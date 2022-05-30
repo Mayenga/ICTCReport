@@ -1,8 +1,12 @@
 <x-guest-layout>
     <x-auth-card>
         <x-slot name="logo">
-            <a href="/">
+            <!-- <a href="/">
                 <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+            </a> -->
+            <a href="/" class="logo d-flex align-items-center w-auto">
+                <img src="assets/img/logo.png" alt="">
+                <span class="d-none d-lg-block">ICT Commission Reporter</span>
             </a>
         </x-slot>
 

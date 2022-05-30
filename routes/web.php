@@ -46,6 +46,7 @@ require __DIR__.'/auth.php';
 
 // routes for todo
 Route::get('/{id}/edit', 'App\Http\Controllers\TodoController@edit')->name('edit');
+Route::post('/sendDelaymessage', 'App\Http\Controllers\TodoController@sendDelaymessage')->name('sendDelaymessage');
 Route::post('/update', 'App\Http\Controllers\TodoController@update')->name('update');
 Route::get('/{id}/complited', 'App\Http\Controllers\TodoController@complited')->name('complited');
 Route::get('/{id}/delete', 'App\Http\Controllers\TodoController@delete')->name('delete');
@@ -66,7 +67,9 @@ Route::post('/resetpass', 'App\Http\Controllers\RegisterUserController@resetpass
 // reports
 Route::get('/reporttodo', 'App\Http\Controllers\TodoController@reporttodo')->name('reporttodo');
 Route::get('/reporttododg', 'App\Http\Controllers\TodoController@reporttododg')->name('reporttododg');
+Route::get('/reporttododr', 'App\Http\Controllers\TodoController@reporttododr')->name('reporttododr');
 Route::post('/report', 'App\Http\Controllers\TodoController@report')->name('report');
 Route::post('/reportdg', 'App\Http\Controllers\TodoController@reportdg')->name('reportdg');
-Route::get('/getReport', 'App\Http\Controllers\PdfController@index')->name('getReport');
+Route::post('/reportdr', 'App\Http\Controllers\TodoController@reportdr')->name('reportdr');
 
+Route::get('/getReport', 'App\Http\Controllers\PdfController@pdfReport')->name('getReport');

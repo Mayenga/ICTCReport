@@ -52,12 +52,12 @@
                       </div>
                       <div class="col-3">
                         <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>GET</button>
-                        <button type="button" class="btn btn-info">Export</button>
+                        <!-- <button type="button" class="btn btn-info">Export</button> -->
                       </div>
                     </div>
                   </form>
                   <br>
-                  <table class="table table-borderless datatable">
+                  <table id="example" style="width:100%" class="display">
                     <thead>
                     <?php 
                       if($todos == ''){

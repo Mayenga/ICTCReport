@@ -17,7 +17,7 @@ class CreateTodosTable extends Migration
             $table->id();
             $table->string('title');
             $table->string('process');
-            $table->timestamp('deadline');
+            $table->date('deadline');
             $table->string('progress');
             $table->string('output');
             $table->boolean('complited')->default(false);
@@ -25,6 +25,7 @@ class CreateTodosTable extends Migration
             $table->bigInteger('user_id')->unsigned();
             $table->timestamps(); 
             $table->boolean('transfered')->default(false);
+            $table->Integer('transferedWho');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('reason');
         });

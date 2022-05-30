@@ -66,5 +66,6 @@
                 </x-button>
             </div>
         </form>
+        
     </x-auth-card>
 </x-guest-layout>

@@ -34,6 +34,11 @@
   <link href="{{ asset('vendor/quill/quill.bubble.css') }}" rel="stylesheet">
   <link href="{{ asset('vendor/simple-datatables/style.css') }}" rel="stylesheet">
 
+  <!-- datatables -->
+  <link href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" rel="stylesheet">
+
+
   <!-- Template Main CSS File -->
   <link href="{{ asset('tmp/css/style.css') }}" rel="stylesheet">
 
@@ -59,6 +64,42 @@
         $(".pweek").hide();
       });
     });
+
+    $(document).ready(function() {
+      var printCounter = 0;
+  
+      // Append a caption to the table before the DataTables initialisation
+      $('#example').append('<caption style="caption-side: bottom">A fictional company\'s staff table.</caption>');
+  
+      $('#example').DataTable( {
+          dom: 'Bfrtip',
+          buttons: [
+              'copy',
+              {
+                  extend: 'excel',
+                  messageTop: 'The information in this table is copyright to Sirius Cybernetics Corp.'
+              },
+              {
+                  extend: 'pdf',
+                  messageBottom: null
+              },
+              {
+                  extend: 'print',
+                  messageTop: function () {
+                      printCounter++;
+  
+                      if ( printCounter === 1 ) {
+                          return 'This is the first time you have printed this document.';
+                      }
+                      else {
+                          return 'You have printed this document '+printCounter+' times';
+                      }
+                  },
+                  messageBottom: null
+              }
+          ]
+      } );
+  });
   </script>
 </head>
 <body class="hold-transition sidebar-mini">
@@ -68,6 +109,16 @@
         {{ $slot }}
         <!-- @include('layouts.footer') -->
     </div>
+
+<!-- datatable -->
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
 
       <!-- Vendor JS Files -->
   <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.js') }}"></script>

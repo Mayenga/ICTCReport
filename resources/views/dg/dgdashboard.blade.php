@@ -286,36 +286,38 @@
                   <h5 class="card-title">Recent Activity <span>| This Week</span></h5>
 
                   <div class="activity">
-                    <?php
-                      $id = auth()->id();
-                      if(isset($userid)){
-                        $id = $userid;
+                  <?php
+                  if(isset($userid)){
+                    $id = $userid;
+                  }
+                  $color = "";
+                  $carbon = \Carbon\Carbon::now();  
+                  $weekStartDate = $carbon->startOfWeek()->format('Y-m-d H:i');
+                  $weekEndDate = $carbon->endOfWeek()->format('Y-m-d H:i');
+                  $activities = DB::select("SELECT * FROM todos WHERE user_id = $id AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id OR dpt_id IN(SELECT dpt_id FROM users WHERE id = $id AND id IN(SELECT user_id FROM role_user WHERE role_id = 3))) AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
+                  foreach($activities As $todos){
+                      $deadline = $todos->deadline;
+                      $title = $todos->title;
+                      if($todos->complited == true){
+                        $class = 'text-success';
+                      }else{
+                        $class = 'text-warning';
                       }
-                      $color = "";
-                      $carbon = \Carbon\Carbon::now();  
-                      $weekStartDate = $carbon->startOfWeek()->format('Y-m-d H:i');
-                      $weekEndDate = $carbon->endOfWeek()->format('Y-m-d H:i');
-                      $activities = DB::select("SELECT * FROM todos WHERE user_id = $id AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
-                      if(isset($dptid)){
-                        $id = $dptid;
-                        $activities = DB::select("SELECT * FROM todos WHERE user_id IN(SELECT users.id FROM users,role_user WHERE users.id = role_user.user_id AND dpt_id = $id AND role_id = 3) AND created_at BETWEEN '$weekStartDate' AND '$weekEndDate'");
+                      if($todos->transfered){
+                        $color = "color:blue";
                       }
-                      
-                      foreach($activities As $todos){
-                          $title = $todos->title;
-                          if($todos->transfered){
-                            $color = "color:blue";
-                          }
-
-                          echo "<div class='activity-item d-flex'>
-                            <div class='activite-label'>32 min</div>
-                            <i class='bi bi-circle-fill activity-badge text-success align-self-start'></i>
-                            <div class='activity-content' style='$color'>
-                              $title
-                            </div>
-                          </div>";
+                      if($deadline == date('Y-m-d')){
+                        $deadline = 'Today';
                       }
-                    ?>
+                      echo "<div class='activity-item d-flex'>
+                        <div class='activite-label'>$deadline</div>
+                        <i class='bi bi-circle-fill activity-badge $class align-self-start'></i>
+                        <div class='activity-content' style='$color'>
+                          $title
+                        </div>
+                      </div>";
+                  }
+                ?>
 
                   </div>
 

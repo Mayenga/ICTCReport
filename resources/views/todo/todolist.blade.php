@@ -44,7 +44,7 @@
                   <h6>
                   <x-alert />
                 </h6>
-                  <table class="table table-borderless datatable">
+                  <table id="example" style="width:100%" class="display">
                     <thead>
                     <?php 
                       if($todos == ''){
@@ -82,14 +82,27 @@
                     <tbody>
                       @foreach($todos as $todo)
                         <?php 
+                        // $date1=date_create("2022-05-15");
+                        // $date2=date_create("2013-12-12");
+                        // $diff=date_diff($date1,$date2);
+                        // echo $diff->format("%R%a days");
+
+                        $d1 = date_create(date("Y-m-d"));
+                        $d2 = date_create($todo->deadline);
+                        // echo date_diff($d1,$d2);
+                          
                           $status = '';
                           $statuss = '';
                           $statusclass = '';
                           $statusclasss = '';
                           $statusAction = '';
+                          $sorted = '';
+                          $reason = '';
                           $style = "";
                           $style2 = "";
                           $style3 = "";
+                          $report = 'display:none;';
+                          
                           if($todo->complited){
                             $statusclass = 'badge bg-success';
                             $status = 'Completed';
@@ -101,18 +114,97 @@
                             $status = 'Pending';
                             $statusAction = 'Completed';
                           }
+                          if($d2 >= $d1){
+                            $items = "display:block;";
+                            $report = 'display:none;';
+                            $sorted = 'display:none;';
+                            $reason = 'display:none;';
+                          }else{
+                            if($todo->complited){
+                              $items = "display:block;";
+                              $report = 'display:none;';
+                              $status = 'Completed';
+                              $sorted = 'display:none;';
+                              $reason = 'display:none;';
+                              $statusclass = 'badge bg-success';
+                            }else{
+                              if($todo->reason == 'No reason'){
+                                if (Auth::user()->hasRole('dg') || Auth::user()->hasRole('director') && $todo->transfered && $todo->reason == 'No reason'){
+                                  $items = "display:none;";
+                                  $report = 'display:none;';
+                                  $sorted = 'display:none;';
+                                  $reason = 'display:block;';
+                                  $status = 'Pending And Delayed';
+                                  $statusclass = 'badge bg-danger'; 
+                                }else{
+                                  $items = "display:none;";
+                                  $report = 'display:block;';
+                                  $sorted = 'display:none;';
+                                  $reason = 'display:none;';
+                                  $status = 'Pending And Delayedd';
+                                  $statusclass = 'badge bg-danger'; 
+                                }
+                              }else{
+                                $items = "display:none;";
+                                $report = 'display:none;';
+                                $reason = 'display:none;';
+                                $sorted = 'display:block; color:green;';
+                                $status = 'Delayed but Sorted';
+                                $statusclass = 'badge bg-danger';
+                              }
+                            }
+                          }
                           if($todo->transfered){
                             $statusclasss = 'badge bg-success';
                             $statuss = 'Transfered';
                             $statusActionn = 'Transfered';
                             $style2 = "color:grey";
-                            if (Auth::user()->hasRole('dg') || Auth::user()->hasRole('director')){
-                              $style = "";
-                              $style3 = "pointer-events: none;";
+                            if (Auth::user()->hasRole('dg')){
+                              if($todo->transferedWho == 1){
+                                $style3 = "pointer-events: none;";
+                              }
+                              if($todo->transferedWho == 2){
+                                $style = "pointer-events: none;";
+                              }
+                            }
+                            if(Auth::user()->hasRole('director')){
+                              if($todo->transferedWho == 1 && $todo->reason == 'No reason'){
+                                $style = "pointer-events: none;";
+                                $reason = 'display:none;';
+                                $report = 'display:none;';
+                                if($d2 >= $d1){
+                                }else{
+                                  $report = 'display:block;';  
+                                }
+                              }
+                              if($todo->transferedWho == 2){
+                                $style3 = "pointer-events: none;";
+                              }
                             }
                             if (Auth::user()->hasRole('user')){
                               $style = "pointer-events: none;";
                               $style3 = "";
+                            }
+                            if($todo->complited){
+                              if (Auth::user()->hasRole('director')){
+                                $items = "display:block;";
+                                $report = 'display:none;';
+                                $status = 'Completed';
+                                $sorted = 'display:none;';
+                                $reason = 'display:none;';
+                                $statusclass = 'badge bg-success';
+                                $style3 = "pointer-events: none;";
+                                $style = "pointer-events: none;";
+                              }else{
+                                $items = "display:block;";
+                                $report = 'display:none;';
+                                $status = 'Completed';
+                                $sorted = 'display:none;';
+                                $reason = 'display:none;';
+                                $statusclass = 'badge bg-success';
+                                $style3 = "pointer-events: none;";
+                                $style = "pointer-events: none;";
+                              }
                             }
                           }
                         ?>
@@ -157,50 +249,8 @@
                           <td><span class="{{ $statusclasss }}">{{$statuss}}</span></td>
                           @endif
                           <td><span class="{{ $statusclass }}">{{$status}}</span></td>
-                          <td><a style="{{ $style }}" href="{{ asset('/' . $todo->id . '/edit') }}">Edit</a><div style="margin-left:5px;margin-right:5px;border-left: 2px solid black;display:inline;";></div><a style="{{ $style }}" data-bs-toggle="modal" data-bs-target="#disablebackdrop" href=""><span style="color:red;$style">Delete</span></a><div style="margin-left:5px;margin-right:5px;border-left: 2px solid black;display:inline;";></div><a style="{{ $style3 }}" data-bs-toggle="modal" data-bs-target="#disablebackdrop1" href="">{{ $statusAction }}</a></td>
+                          <td><div style="{{ $items }}"><a style="{{ $style }}" href="{{ asset('/' . $todo->id . '/edit') }}">Edit</a><div style="margin-left:5px;margin-right:5px;border-left: 2px solid black;display:inline;";></div><a style="{{ $style }}" onclick="return confirm('If you delete this task, you can not undo. \n Are you sure you want to delete?')" href="{{ asset('/' . $todo->id . '/delete') }}"><span style="color:red;$style">Delete</span></a><div style="margin-left:5px;margin-right:5px;border-left: 2px solid black;display:inline;";></div><a style="{{ $style3 }}" onclick="return confirm('If you change status, you can not undo. \n You will not be able to Edit, Delete, or change into Incomplete \n Are you sure you want to do this?')" href="{{ asset('/' . $todo->id . '/complited') }}">{{ $statusAction }}</a></div><div style="{{ $report }}"><form class="form-inline" action="/sendDelaymessage" method="post">@csrf<input type="hidden" name="id" value=" {{ $todo->id }}"/><input class="form-control-sm" type="text" placeholder="Why not completed ontime" name="Reason"> <button type="submit" class="btn btn-primary mb-2">Send</button></form></div><div style="{{ $sorted }}"><h5>{{ $todo->reason }}</h5></div><div style="{{ $reason }}"><h5>Pending Reason</h5></div></td>
                         </tr>
-                        
-                        <!-- Disabled Backdrop Modal -->
-                        <div class="modal fade" id="disablebackdrop" tabindex="-1" data-bs-backdrop="false">
-                          <div class="modal-dialog">
-                            <div class="modal-content">
-                              <div class="modal-header">
-                                <h5 class="modal-title">Comfirm Delete</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                              </div>
-                              <div class="modal-body">
-                                If you delete this task, you can not undo. <br />
-                                Are you sure you want to delete?
-                              </div>
-                              <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                                <a href="{{ asset('/' . $todo->id . '/delete') }}" class="btn btn-danger">Delete</a>
-                              </div>
-                            </div>
-                          </div>
-                        </div><!-- End Disabled Backdrop Modal-->
-
-                        <!-- Disabled Backdrop Modal -->
-                        <div class="modal fade" id="disablebackdrop1" tabindex="-1" data-bs-backdrop="false">
-                          <div class="modal-dialog">
-                            <div class="modal-content">
-                              <div class="modal-header">
-                                <h5 class="modal-title">Please Comfirm</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                              </div>
-                              <div class="modal-body">
-                                If you change status, you can not undo. <br />
-                                You will not be able to Edit, Delete, or change into Incomplete
-                                <br />
-                                Are you sure you want to do this?
-                              </div>
-                              <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                                <a  href="{{ asset('/' . $todo->id . '/complited') }}" class="btn btn-success">Yes</a>
-                              </div>
-                            </div>
-                          </div>
-                        </div><!-- End Disabled Backdrop Modal-->
                       @endforeach
                     </tbody>
                   </table>
