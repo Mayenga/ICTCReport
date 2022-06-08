@@ -141,7 +141,7 @@
                                   $report = 'display:block;';
                                   $sorted = 'display:none;';
                                   $reason = 'display:none;';
-                                  $status = 'Pending And Delayedd';
+                                  $status = 'Pending And Delayed';
                                   $statusclass = 'badge bg-danger'; 
                                 }
                               }else{
@@ -150,7 +150,7 @@
                                 $reason = 'display:none;';
                                 $sorted = 'display:block; color:green;';
                                 $status = 'Delayed but Sorted';
-                                $statusclass = 'badge bg-danger';
+                                $statusclass = 'badge bg-warning';
                               }
                             }
                           }
@@ -249,7 +249,7 @@
                           <td><span class="{{ $statusclasss }}">{{$statuss}}</span></td>
                           @endif
                           <td><span class="{{ $statusclass }}">{{$status}}</span></td>
-                          <td><div style="{{ $items }}"><a style="{{ $style }}" href="{{ asset('/' . $todo->id . '/edit') }}">Edit</a><div style="margin-left:5px;margin-right:5px;border-left: 2px solid black;display:inline;";></div><a style="{{ $style }}" onclick="return confirm('If you delete this task, you can not undo. \n Are you sure you want to delete?')" href="{{ asset('/' . $todo->id . '/delete') }}"><span style="color:red;$style">Delete</span></a><div style="margin-left:5px;margin-right:5px;border-left: 2px solid black;display:inline;";></div><a style="{{ $style3 }}" onclick="return confirm('If you change status, you can not undo. \n You will not be able to Edit, Delete, or change into Incomplete \n Are you sure you want to do this?')" href="{{ asset('/' . $todo->id . '/complited') }}">{{ $statusAction }}</a></div><div style="{{ $report }}"><form class="form-inline" action="/sendDelaymessage" method="post">@csrf<input type="hidden" name="id" value=" {{ $todo->id }}"/><input class="form-control-sm" type="text" placeholder="Why not completed ontime" name="Reason"> <button type="submit" class="btn btn-primary mb-2">Send</button></form></div><div style="{{ $sorted }}"><h5>{{ $todo->reason }}</h5></div><div style="{{ $reason }}"><h5>Pending Reason</h5></div></td>
+                          <td><div style="{{ $items }}"><a style="{{ $style }}" href="{{ asset('/' . $todo->id . '/edit') }}">Edit</a><div style="margin-left:5px;margin-right:5px;border-left: 2px solid black;display:inline;";></div><a style="{{ $style }}" onclick="return confirm('If you delete this task, you can not undo. \n Are you sure you want to delete?')" href="{{ asset('/' . $todo->id . '/delete') }}"><span style="color:red;$style">Delete</span></a><div style="margin-left:5px;margin-right:5px;border-left: 2px solid black;display:inline;";></div><a style="{{ $style3 }}" onclick="return confirm('If you change status, you can not undo. \n You will not be able to Edit, Delete, or change into Incomplete \n Are you sure you want to do this?')" href="{{ asset('/' . $todo->id . '/complited') }}">{{ $statusAction }}</a></div><div style="{{ $report }}"><form class="form-inline" action="/sendDelaymessage" method="post">@csrf<input type="hidden" name="id" value=" {{ $todo->id }}"/><input class="form-control-sm" type="text" placeholder="Why not completed ontime" name="Reason"> <button type="submit" class="btn btn-primary mb-2">Send</button></form></div><div style="{{ $sorted }}"><button onclick="taggleReason()" class="tb btn btn-primary mb-1">View Reason</button><span class="reason">{{ $todo->reason }}</span></div><div style="{{ $reason }}">Pending Reason</div></td>
                         </tr>
                       @endforeach
                     </tbody>
