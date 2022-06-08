@@ -291,7 +291,7 @@ class TodoController extends Controller
         $week = substr($week,6);
         $d1 = $weekStartDate;
         $d2 = $weekEndDate;
-
+        $dptName = DB::select("SELECT name FROM departments WHERE id = $dpt");
         if($week == ''){
             // $uid = DB::select("SELECT * FROM users WHERE dpt_id = $dpt AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)");
             // foreach($uid As $ID){
@@ -299,7 +299,7 @@ class TodoController extends Controller
             // }
             // $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id = $uidd UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $uidd)");
             $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments WHERE id = $dpt) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt)");
-            return view('todo.reports.reportsDG')->with(['todos' => $todos]);
+            return view('todo.reports.reportsDG')->with(['todos' => $todos,'dptName' => $dptName]);
         }else if($week > $todayweek){
             return view('todo.reports.reportsDG')->with(['todos' => $todos]);
         }else{
@@ -319,7 +319,7 @@ class TodoController extends Controller
 
             $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments WHERE id = $dpt) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt)");
             // $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id = $uid UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
-            return view('todo.reports.reportsDG')->with(['todos' => $todos]);
+            return view('todo.reports.reportsDG')->with(['todos' => $todos,'dptName' => $dptName]);
         }
     }
 
@@ -336,10 +336,10 @@ class TodoController extends Controller
         $week = substr($week,6);
         $d1 = $weekStartDate;
         $d2 = $weekEndDate;
-
+        $userName = DB::select("SELECT name FROM users WHERE id = $user");
         if($week == ''){
             $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id = $user UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $user)");
-            return view('todo.reports.reportsDR')->with(['todos' => $todos]);
+            return view('todo.reports.reportsDR')->with(['todos' => $todos,'userName' => $userName]);
         }else if($week > $todayweek){
             return view('todo.reports.reportsDR')->with(['todos' => $todos]);
         }else{
@@ -359,8 +359,9 @@ class TodoController extends Controller
 
             // $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id IN(SELECT id FROM users WHERE dpt_id IN(SELECT id FROM departments WHERE id = $dpt) AND id IN(SELECT user_id FROM role_user WHERE role_id = 3)) UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE dpt_id = $dpt)");
             $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id = $user UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $user)");
+            
             // $todos = DB::select("SELECT * FROM todos WHERE created_at BETWEEN '$d1' AND '$d2' AND user_id = $uid UNION SELECT * FROM todos WHERE id IN(SELECT todo_id FROM transfers WHERE user_id = $id)");
-            return view('todo.reports.reportsDR')->with(['todos' => $todos]);
+            return view('todo.reports.reportsDR')->with(['todos' => $todos,'userName' => $userName]);
         }
     }
 
