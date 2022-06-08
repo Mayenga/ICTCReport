@@ -54,6 +54,15 @@
                         <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>GET</button>
                         <!-- <button type="button" class="btn btn-info">Export</button> -->
                       </div>
+                      <br />
+                      <br />
+                      <?php 
+                        if(isset($dptName)){
+                          foreach($dptName AS $dptNames){
+                            echo "<span>$dptNames->name 's Activities</span>";
+                          }
+                        }
+                      ?>
                     </div>
                   </form>
                   <br>
@@ -82,6 +91,8 @@
                     <tbody>
                       @foreach($todos as $todo)
                         <?php 
+                          $d1 = date_create(date("Y-m-d"));
+                          $d2 = date_create($todo->deadline);
                           $status = '';
                           $statuss = '';
                           $statusclass = '';
@@ -98,6 +109,21 @@
                             $statusclass = 'badge bg-warning';
                             $status = 'Pending';
                             $statusAction = 'Completed';
+                          }
+                          if($d2 >= $d1){
+                          }else{
+                            if($todo->complited){
+                              $status = 'Completed';
+                              $statusclass = 'badge bg-success';
+                            }else{
+                              if($todo->reason == 'No reason'){
+                                $status = 'Pending And Delayed';
+                                $statusclass = 'badge bg-danger'; 
+                              }else{
+                                $status = 'Delayed but Sorted';
+                                $statusclass = 'badge bg-danger';
+                              }
+                            }
                           }
                           if($todo->transfered){
                             $statusclasss = 'badge bg-success';

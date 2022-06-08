@@ -47,6 +47,14 @@
                                 <option value="{{ $user->id }}">{{$user->name}}</option>
                             @endforeach
                         </select>
+                        <br />
+                        <?php 
+                          if(isset($userName)){
+                            foreach($userName AS $userNames){
+                              echo "<span>$userNames->name 's Activities</span>";
+                            }
+                          }
+                        ?>
                       </div>
                       <div class="col-3">
                         <input name="week" type="week" class="form-control">
