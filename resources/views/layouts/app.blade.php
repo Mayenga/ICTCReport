@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-
-  <title>Dashboard - ICTCReport</title>
+  <title>ICTC Report</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
@@ -44,9 +43,18 @@
 
   <script>
     $(document).ready(function(){
+      $(".reason").hide();
       $(".allall").hide();
       $(".thisall").hide();
       $(".pall").hide();
+      $(".reason").click(function(){
+        $(".reason").hide();
+        $(".tb").show();  
+      });
+      $(".tb").click(function(){
+        $(".reason").show();
+        $(".tb").hide();  
+      });
       $(".week").click(function(){
         $(".allall").hide();
         $(".weekall").show();
